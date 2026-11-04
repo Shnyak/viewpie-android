@@ -44,7 +44,7 @@ private fun ViewpieApp() {
     var cameras by remember { mutableStateOf<List<CameraDto>>(emptyList()) }
     var settings by remember { mutableStateOf<SettingsDto?>(null) }
     var selected by remember { mutableStateOf("Обзор") }
-    var selectedPanel by remember { mutableStateOf<PanelDetailDto?>(null) }
+    var selectedPanel by remember { mutableStateOf<PanelDetailDto?>(null) }\n    var activePanelId by remember { mutableStateOf<String?>(null) }\n    var mirrorMode by remember { mutableStateOf(false) }\n    var mirrorPanel by remember { mutableStateOf<PanelDetailDto?>(null) }\n    var mirrorCameraName by remember { mutableStateOf<String?>(null) }
     var selectedCamera by remember { mutableStateOf<CameraDto?>(null) }
     var fullscreenDuration by remember { mutableStateOf("60") }
     var cameraTests by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
@@ -124,7 +124,7 @@ private fun ViewpieApp() {
 
             when (selected) {
                 "Обзор" -> {
-                    Text("Состояние Viewpie", style = MaterialTheme.typography.titleLarge)
+                    Text("Состояние Viewpie", style = MaterialTheme.typography.titleLarge)\n                    if (!mirrorMode) {\n                        Button(\n                            enabled = connected,\n                            onClick = {\n                                scope.launch {\n                                    val fullscreen = status?.fullscreen_camera\n                                    if (!fullscreen.isNullOrBlank()) {\n                                        mirrorCameraName = fullscreen\n                                        mirrorPanel = null\n                                        mirrorMode = true\n                                    } else {\n                                        val panelId = activePanelId\n                                        if (panelId == null) message = "Сервер не сообщил активную панель"\n                                        else runCatching { api?.panel(panelId) }\n                                            .onSuccess { detail ->\n                                                if (detail != null) { mirrorPanel = detail; mirrorCameraName = null; mirrorMode = true }\n                                                else message = "Не удалось загрузить активную панель"\n                                            }\n                                            .onFailure { message = "Ошибка просмотра: ${it.message}" }\n                                    }\n                                }\n                            },\n                            modifier = Modifier.fillMaxWidth()\n                        ) { Text("Как на HDMI-мониторе") }\n                    } else {\n                        Text("Предпросмотр активного вывода", style = MaterialTheme.typography.titleMedium)\n                        OutlinedButton(onClick = { mirrorMode = false; mirrorPanel = null; mirrorCameraName = null }) { Text("Закрыть предпросмотр") }\n                        if (mirrorCameraName != null) {\n                            val cam = cameras.firstOrNull { it.name == mirrorCameraName }\n                            val url = cam?.fullscreen_url ?: cam?.url\n                            if (!url.isNullOrBlank()) RtspCameraPlayer(url, Modifier.fillMaxWidth().height(240.dp))\n                            else Text("Не удалось найти RTSP-поток полноэкранной камеры: ${mirrorCameraName}")\n                        } else if (mirrorPanel != null) {\n                            Text(mirrorPanel?.name ?: "Активная панель")\n                            PanelGridPreview(mirrorPanel!!, cameras, settings?.rotation_interval ?: 0L)\n                        }\n                    }
                     InfoLine("Подключение", if (connected) "Активно" else "Нет")
                     InfoLine("Активная панель", status?.active_panel_name ?: status?.active_panel ?: "—")
                     InfoLine("Полноэкранная камера", status?.fullscreen_camera ?: "—")
@@ -147,7 +147,7 @@ private fun ViewpieApp() {
                         Text(selectedPanel?.name ?: selectedPanel?.id ?: "Просмотр панели", style = MaterialTheme.typography.titleLarge)
                         OutlinedButton(onClick = { selectedPanel = null }) { Text("К списку панелей") }
                         Text("Независимый просмотр на телефоне. HDMI-монитор не переключается.")
-                        PanelGridPreview(panel = selectedPanel!!, cameras = cameras)
+                        PanelGridPreview(panel = selectedPanel!!, cameras = cameras, rotationInterval = settings?.rotation_interval ?: 0L)
                     } else {
                         Text("Существующие панели", style = MaterialTheme.typography.titleLarge)
                         if (panels.isEmpty()) Text("Панели не найдены")
@@ -394,7 +394,7 @@ private fun ViewpieApp() {
 }
 
 @Composable
-private fun PanelGridPreview(panel: PanelDetailDto, cameras: List<CameraDto>) {
+private fun PanelGridPreview(panel: PanelDetailDto, cameras: List<CameraDto>, rotationInterval: Long) {
     val rows = remember(panel.layout) {
         panel.layout.orEmpty().lines()
             .map { line -> line.trim().split(Regex("\\s+")).filter { it.isNotBlank() } }
@@ -414,7 +414,7 @@ private fun PanelGridPreview(panel: PanelDetailDto, cameras: List<CameraDto>) {
         rows.forEach { row ->
             Row(Modifier.weight(1f).fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(3.dp)) {
                 row.forEach { slot ->
-                    PanelSlot(slot, feedBySlot[slot].orEmpty(), cameraByName)
+                    PanelSlot(slot, feedBySlot[slot].orEmpty(), cameraByName, rotationInterval)
                 }
             }
         }
