@@ -3,6 +3,7 @@ package com.shnyak.viewpie.data
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Path
 
 interface ViewpieApi {
@@ -10,6 +11,9 @@ interface ViewpieApi {
     @GET("api/panels") suspend fun panels(): PanelsResponse
     @GET("api/panels/{id}") suspend fun panel(@Path("id") id: String): PanelDetailDto
     @GET("api/cameras") suspend fun cameras(): List<CameraDto>
+    @GET("api/settings") suspend fun settings(): SettingsDto
+    @PUT("api/settings") suspend fun updateSettings(@Body patch: Map<String, Any>)
+    @POST("api/cameras/{name}/test") suspend fun testCamera(@Path("name") name: String): CameraTestDto
     @POST("api/pause") suspend fun pause()
     @POST("api/resume") suspend fun resume()
     @POST("api/grid") suspend fun grid()
