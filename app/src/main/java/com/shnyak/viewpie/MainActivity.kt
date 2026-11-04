@@ -94,6 +94,28 @@ private fun ViewpieApp() {
         }
     }
 
+    if (showRestartConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showRestartConfirmation = false },
+            title = { Text("Перезагрузить Raspberry Pi?") },
+            text = { Text("Вывод Viewpie прервётся. Дождитесь перезапуска Raspberry Pi и сервиса.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showRestartConfirmation = false
+                    scope.launch {
+                        runCatching { api?.restart("Bearer $restartToken") }
+                            .onSuccess { message = "Команда перезагрузки принята" }
+                            .onFailure { message = "Перезагрузка не выполнена: ${it.message}" }
+                        restartToken = ""
+                    }
+                }) { Text("Перезагрузить") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showRestartConfirmation = false }) { Text("Отмена") }
+            }
+        )
+    }
+
     Scaffold(
         topBar = { TopAppBar(title = { Text("Viewpie") }) },
         bottomBar = {
@@ -487,8 +509,21 @@ private fun PanelGridPreview(panel: PanelDetailDto, cameras: List<CameraDto>, ro
 }
 
 @Composable
-private fun RowScope.PanelSlot(slot: String, feeds: List<String>, cameraByName: Map<String, CameraDto>) {
+private fun RowScope.PanelSlot(
+    slot: String,
+    feeds: List<String>,
+    cameraByName: Map<String, CameraDto>,
+    rotationInterval: Long
+) {
     var selectedIndex by remember(feeds) { mutableIntStateOf(0) }
+    LaunchedEffect(feeds, rotationInterval) {
+        if (feeds.size > 1 && rotationInterval > 0) {
+            while (true) {
+                delay(rotationInterval.coerceAtLeast(1) * 1000L)
+                selectedIndex = (selectedIndex + 1) % feeds.size
+            }
+        }
+    }
     val feedName = feeds.getOrNull(selectedIndex)
     val camera = feedName?.let { cameraByName[it] }
     Card(Modifier.weight(1f).fillMaxHeight()) {
