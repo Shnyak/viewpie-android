@@ -269,8 +269,22 @@ private fun ViewpieApp() {
                         Text(selectedCamera?.name ?: "Камера", style = MaterialTheme.typography.titleLarge)
                         OutlinedButton(onClick = { selectedCamera = null }) { Text("К списку камер") }
                         val streamUrl = selectedCamera?.url
+                        var useMainStream by remember(selectedCamera?.name) { mutableStateOf(false) }
+                        val phoneStreamUrl = if (useMainStream) selectedCamera?.fullscreen_url ?: streamUrl else streamUrl
                         if (!streamUrl.isNullOrBlank()) {
-                            RtspCameraPlayer(streamUrl, Modifier.fillMaxWidth().height(240.dp))
+                            if (!selectedCamera?.fullscreen_url.isNullOrBlank()) {
+                                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                    Text("Поток высокого разрешения")
+                                    Switch(checked = useMainStream, onCheckedChange = { useMainStream = it })
+                                }
+                            }
+                            RtspCameraPlayer(phoneStreamUrl ?: streamUrl, Modifier.fillMaxWidth().height(240.dp))
+                            OutlinedButton(onClick = { phoneFullscreen = true }, modifier = Modifier.fillMaxWidth()) {
+                                Text("Во весь экран телефона")
+                            }
+                            if (phoneFullscreen) {
+                                FullscreenRtspDialog(phoneStreamUrl ?: streamUrl) { phoneFullscreen = false }
+                            }
                         } else Text("Для этой камеры не задан RTSP URL.")
                         Text("Независимый просмотр: HDMI-вывод Viewpie не меняется.")
                     } else {
