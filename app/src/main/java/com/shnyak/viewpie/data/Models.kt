@@ -46,3 +46,18 @@ data class CameraDto(
     val ref_count: Int? = null,
     val running: Boolean? = null
 )
+
+
+data class SettingsDto(
+    val spacing: Int = 0,
+    val pause_off_screen: Boolean = false,
+    val background: String = "#000000",
+    val rotation_interval: Long = 0,
+    val fullscreen_timeout: Long = 60
+)
+
+data class CameraTestDto(
+    val ok: Boolean = false,
+    val latency_ms: Long? = null,
+    val error: String? = null
+)
