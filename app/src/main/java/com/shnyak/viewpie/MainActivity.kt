@@ -1,14 +1,14 @@
 package com.shnyak.viewpie
 
-import android.content.Context
+import android.app.Activity\nimport android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.*\nimport androidx.compose.ui.Alignment\nimport androidx.compose.ui.platform.LocalContext\nimport androidx.compose.ui.window.Dialog\nimport androidx.compose.ui.window.DialogProperties
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
-import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.PasswordVisualTransformation\nimport androidx.core.view.WindowCompat\nimport androidx.core.view.WindowInsetsCompat
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -50,7 +50,7 @@ private fun ViewpieApp() {
     var mirrorMode by remember { mutableStateOf(false) }
     var mirrorPanel by remember { mutableStateOf<PanelDetailDto?>(null) }
     var mirrorCameraName by remember { mutableStateOf<String?>(null) }
-    var selectedCamera by remember { mutableStateOf<CameraDto?>(null) }
+    var selectedCamera by remember { mutableStateOf<CameraDto?>(null) }\n    var phoneFullscreen by remember { mutableStateOf(false) }
     var fullscreenDuration by remember { mutableStateOf("60") }
     var cameraTests by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
     var savingSettings by remember { mutableStateOf(false) }
@@ -562,4 +562,38 @@ private fun formatUptime(seconds: Long): String {
     val hours = (seconds % 86400) / 3600
     val minutes = (seconds % 3600) / 60
     return if (days > 0) "${days} д ${hours} ч" else "${hours} ч ${minutes} мин"
+}
+
+
+@Composable
+private fun FullscreenRtspDialog(url: String, onClose: () -> Unit) {
+    val context = LocalContext.current
+    val activity = context as? Activity
+    DisposableEffect(activity) {
+        val window = activity?.window
+        if (window != null) {
+            WindowCompat.getInsetsController(window, window.decorView)
+                .hide(WindowInsetsCompat.Type.systemBars())
+        }
+        onDispose {
+            if (window != null) {
+                WindowCompat.getInsetsController(window, window.decorView)
+                    .show(WindowInsetsCompat.Type.systemBars())
+            }
+        }
+    }
+    Dialog(
+        onDismissRequest = onClose,
+        properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)
+    ) {
+        Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+            Box(Modifier.fillMaxSize()) {
+                RtspCameraPlayer(url, Modifier.fillMaxSize())
+                FilledTonalButton(
+                    onClick = onClose,
+                    modifier = Modifier.align(Alignment.TopEnd).padding(16.dp)
+                ) { Text("Закрыть") }
+            }
+        }
+    }
 }
