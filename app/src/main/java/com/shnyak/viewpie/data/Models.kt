@@ -7,7 +7,7 @@ data class StatusDto(
     val active_panel: String? = null,
     val active_panel_name: String? = null,
     val fullscreen_camera: String? = null,
-    val cameras: Int? = null,
+    val cameras: List<String> = emptyList(),
     val layout: String? = null,
     val spacing: Int? = null,
     val uptime_seconds: Long? = null,
@@ -16,8 +16,29 @@ data class StatusDto(
     val panels_count: Int? = null
 )
 
-data class PanelsResponse(val panels: List<PanelSummaryDto> = emptyList(), val active: String? = null)
-data class PanelSummaryDto(val id: String, val name: String? = null, val camera_count: Int? = null)
+data class PanelsResponse(
+    val panels: List<PanelSummaryDto> = emptyList(),
+    val active: String? = null
+)
+
+data class PanelSummaryDto(
+    val id: String,
+    val name: String? = null,
+    val camera_count: Int? = null
+)
+
+data class PanelDetailDto(
+    val id: String? = null,
+    val name: String? = null,
+    val layout: String? = null,
+    val viewports: List<ViewportDto> = emptyList()
+)
+
+data class ViewportDto(
+    val slot: String,
+    val feeds: List<String> = emptyList()
+)
+
 data class CameraDto(
     val name: String,
     val url: String? = null,
