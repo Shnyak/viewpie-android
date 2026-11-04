@@ -13,7 +13,10 @@ data class StatusDto(
     val uptime_seconds: Long? = null,
     val cpu_temp_c: Double? = null,
     val active_streams: Int? = null,
-    val panels_count: Int? = null
+    val panels_count: Int? = null,
+    val cpu_load_percent: Double? = null,
+    val load_average_1m: Double? = null,
+    val restart_available: Boolean = false
 )
 
 data class PanelsResponse(
