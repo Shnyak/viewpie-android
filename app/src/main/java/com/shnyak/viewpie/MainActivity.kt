@@ -1,14 +1,21 @@
 package com.shnyak.viewpie
 
-import android.app.Activity\nimport android.content.Context
+import android.app.Activity
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.*\nimport androidx.compose.ui.Alignment\nimport androidx.compose.ui.platform.LocalContext\nimport androidx.compose.ui.window.Dialog\nimport androidx.compose.ui.window.DialogProperties
+import androidx.compose.foundation.layout.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
-import androidx.compose.ui.text.input.PasswordVisualTransformation\nimport androidx.core.view.WindowCompat\nimport androidx.core.view.WindowInsetsCompat
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -50,7 +57,8 @@ private fun ViewpieApp() {
     var mirrorMode by remember { mutableStateOf(false) }
     var mirrorPanel by remember { mutableStateOf<PanelDetailDto?>(null) }
     var mirrorCameraName by remember { mutableStateOf<String?>(null) }
-    var selectedCamera by remember { mutableStateOf<CameraDto?>(null) }\n    var phoneFullscreen by remember { mutableStateOf(false) }
+    var selectedCamera by remember { mutableStateOf<CameraDto?>(null) }
+    var phoneFullscreen by remember { mutableStateOf(false) }
     var fullscreenDuration by remember { mutableStateOf("60") }
     var cameraTests by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
     var savingSettings by remember { mutableStateOf(false) }
