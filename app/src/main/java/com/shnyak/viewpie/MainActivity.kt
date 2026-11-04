@@ -7,7 +7,8 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.*\nimport androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.material3.*
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -44,11 +45,17 @@ private fun ViewpieApp() {
     var cameras by remember { mutableStateOf<List<CameraDto>>(emptyList()) }
     var settings by remember { mutableStateOf<SettingsDto?>(null) }
     var selected by remember { mutableStateOf("Обзор") }
-    var selectedPanel by remember { mutableStateOf<PanelDetailDto?>(null) }\n    var activePanelId by remember { mutableStateOf<String?>(null) }\n    var mirrorMode by remember { mutableStateOf(false) }\n    var mirrorPanel by remember { mutableStateOf<PanelDetailDto?>(null) }\n    var mirrorCameraName by remember { mutableStateOf<String?>(null) }
+    var selectedPanel by remember { mutableStateOf<PanelDetailDto?>(null) }
+    var activePanelId by remember { mutableStateOf<String?>(null) }
+    var mirrorMode by remember { mutableStateOf(false) }
+    var mirrorPanel by remember { mutableStateOf<PanelDetailDto?>(null) }
+    var mirrorCameraName by remember { mutableStateOf<String?>(null) }
     var selectedCamera by remember { mutableStateOf<CameraDto?>(null) }
     var fullscreenDuration by remember { mutableStateOf("60") }
     var cameraTests by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
-    var savingSettings by remember { mutableStateOf(false) }\n    var restartToken by remember { mutableStateOf("") }\n    var showRestartConfirmation by remember { mutableStateOf(false) }
+    var savingSettings by remember { mutableStateOf(false) }
+    var restartToken by remember { mutableStateOf("") }
+    var showRestartConfirmation by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     var api by remember { mutableStateOf<ViewpieApi?>(null) }
 
@@ -124,14 +131,53 @@ private fun ViewpieApp() {
 
             when (selected) {
                 "Обзор" -> {
-                    Text("Состояние Viewpie", style = MaterialTheme.typography.titleLarge)\n                    if (!mirrorMode) {\n                        Button(\n                            enabled = connected,\n                            onClick = {\n                                scope.launch {\n                                    val fullscreen = status?.fullscreen_camera\n                                    if (!fullscreen.isNullOrBlank()) {\n                                        mirrorCameraName = fullscreen\n                                        mirrorPanel = null\n                                        mirrorMode = true\n                                    } else {\n                                        val panelId = activePanelId\n                                        if (panelId == null) message = "Сервер не сообщил активную панель"\n                                        else runCatching { api?.panel(panelId) }\n                                            .onSuccess { detail ->\n                                                if (detail != null) { mirrorPanel = detail; mirrorCameraName = null; mirrorMode = true }\n                                                else message = "Не удалось загрузить активную панель"\n                                            }\n                                            .onFailure { message = "Ошибка просмотра: ${it.message}" }\n                                    }\n                                }\n                            },\n                            modifier = Modifier.fillMaxWidth()\n                        ) { Text("Как на HDMI-мониторе") }\n                    } else {\n                        Text("Предпросмотр активного вывода", style = MaterialTheme.typography.titleMedium)\n                        OutlinedButton(onClick = { mirrorMode = false; mirrorPanel = null; mirrorCameraName = null }) { Text("Закрыть предпросмотр") }\n                        if (mirrorCameraName != null) {\n                            val cam = cameras.firstOrNull { it.name == mirrorCameraName }\n                            val url = cam?.fullscreen_url ?: cam?.url\n                            if (!url.isNullOrBlank()) RtspCameraPlayer(url, Modifier.fillMaxWidth().height(240.dp))\n                            else Text("Не удалось найти RTSP-поток полноэкранной камеры: ${mirrorCameraName}")\n                        } else if (mirrorPanel != null) {\n                            Text(mirrorPanel?.name ?: "Активная панель")\n                            PanelGridPreview(mirrorPanel!!, cameras, settings?.rotation_interval ?: 0L)\n                        }\n                    }
+                    Text("Состояние Viewpie", style = MaterialTheme.typography.titleLarge)
+                    if (!mirrorMode) {
+                        Button(
+                            enabled = connected,
+                            onClick = {
+                                scope.launch {
+                                    val fullscreen = status?.fullscreen_camera
+                                    if (!fullscreen.isNullOrBlank()) {
+                                        mirrorCameraName = fullscreen
+                                        mirrorPanel = null
+                                        mirrorMode = true
+                                    } else {
+                                        val panelId = activePanelId
+                                        if (panelId == null) message = "Сервер не сообщил активную панель"
+                                        else runCatching { api?.panel(panelId) }
+                                            .onSuccess { detail ->
+                                                if (detail != null) { mirrorPanel = detail; mirrorCameraName = null; mirrorMode = true }
+                                                else message = "Не удалось загрузить активную панель"
+                                            }
+                                            .onFailure { message = "Ошибка просмотра: ${it.message}" }
+                                    }
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) { Text("Как на HDMI-мониторе") }
+                    } else {
+                        Text("Предпросмотр активного вывода", style = MaterialTheme.typography.titleMedium)
+                        OutlinedButton(onClick = { mirrorMode = false; mirrorPanel = null; mirrorCameraName = null }) { Text("Закрыть предпросмотр") }
+                        if (mirrorCameraName != null) {
+                            val cam = cameras.firstOrNull { it.name == mirrorCameraName }
+                            val url = cam?.fullscreen_url ?: cam?.url
+                            if (!url.isNullOrBlank()) RtspCameraPlayer(url, Modifier.fillMaxWidth().height(240.dp))
+                            else Text("Не удалось найти RTSP-поток полноэкранной камеры: ${mirrorCameraName}")
+                        } else if (mirrorPanel != null) {
+                            Text(mirrorPanel?.name ?: "Активная панель")
+                            PanelGridPreview(mirrorPanel!!, cameras, settings?.rotation_interval ?: 0L)
+                        }
+                    }
                     InfoLine("Подключение", if (connected) "Активно" else "Нет")
                     InfoLine("Активная панель", status?.active_panel_name ?: status?.active_panel ?: "—")
                     InfoLine("Полноэкранная камера", status?.fullscreen_camera ?: "—")
                     InfoLine("Камер в конфигурации", status?.cameras?.size?.toString() ?: "—")
                     InfoLine("Активных потоков", status?.active_streams?.toString() ?: "—")
                     InfoLine("Панелей", status?.panels_count?.toString() ?: "—")
-                    InfoLine("Температура CPU", status?.cpu_temp_c?.let { "${it} °C" } ?: "Нет данных")\n                    InfoLine("Загрузка CPU", status?.cpu_load_percent?.let { "%.1f%%".format(it) } ?: "Нет данных")\n                    InfoLine("Load Average (1 мин)", status?.load_average_1m?.let { "%.2f".format(it) } ?: "Нет данных")
+                    InfoLine("Температура CPU", status?.cpu_temp_c?.let { "${it} °C" } ?: "Нет данных")
+                    InfoLine("Загрузка CPU", status?.cpu_load_percent?.let { "%.1f%%".format(it) } ?: "Нет данных")
+                    InfoLine("Load Average (1 мин)", status?.load_average_1m?.let { "%.2f".format(it) } ?: "Нет данных")
                     InfoLine("Время работы", status?.uptime_seconds?.let { formatUptime(it) } ?: "—")
                     InfoLine("Пауза Viewpie", if (status?.paused == true) "Включена" else "Выключена")
                     InfoLine("Физический экран", when (status?.screen_off) {
@@ -140,7 +186,9 @@ private fun ViewpieApp() {
                         null -> "Нет данных"
                     })
                     Text("Состояние обновляется автоматически каждые 5 секунд.")
-                    if (status?.cpu_load_percent == null || status?.load_average_1m == null) {\n                        Text("Метрики CPU и Load Average требуют обновлённой версии сервера Viewpie.")\n                    }
+                    if (status?.cpu_load_percent == null || status?.load_average_1m == null) {
+                        Text("Метрики CPU и Load Average требуют обновлённой версии сервера Viewpie.")
+                    }
                 }
                 "Панели" -> {
                     if (selectedPanel != null) {
@@ -301,7 +349,24 @@ private fun ViewpieApp() {
                         modifier = Modifier.fillMaxWidth()
                     ) { Text("Обновить состояние") }
                     Text("Для запуска камеры на HDMI выберите её в разделе «Камеры».")
-                    Text("Пауза Viewpie выводит чёрный кадр и останавливает декодеры; это не отключение питания дисплея.")\n                    HorizontalDivider()\n                    Text("Перезагрузка Raspberry Pi", style = MaterialTheme.typography.titleMedium)\n                    if (status?.restart_available == true) {\n                        OutlinedTextField(\n                            value = restartToken, onValueChange = { restartToken = it },\n                            label = { Text("Токен перезагрузки") }, singleLine = true,\n                            visualTransformation = PasswordVisualTransformation(),\n                            modifier = Modifier.fillMaxWidth()\n                        )\n                        Button(\n                            enabled = connected && restartToken.isNotBlank(),\n                            onClick = { showRestartConfirmation = true },\n                            modifier = Modifier.fillMaxWidth()\n                        ) { Text("Перезагрузить Raspberry Pi") }\n                    } else {\n                        Text("Сервер не сообщил о доступности защищённого API перезагрузки. Нужна серверная версия с VIEWPIE_RESTART_TOKEN.")\n                    }
+                    Text("Пауза Viewpie выводит чёрный кадр и останавливает декодеры; это не отключение питания дисплея.")
+                    HorizontalDivider()
+                    Text("Перезагрузка Raspberry Pi", style = MaterialTheme.typography.titleMedium)
+                    if (status?.restart_available == true) {
+                        OutlinedTextField(
+                            value = restartToken, onValueChange = { restartToken = it },
+                            label = { Text("Токен перезагрузки") }, singleLine = true,
+                            visualTransformation = PasswordVisualTransformation(),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Button(
+                            enabled = connected && restartToken.isNotBlank(),
+                            onClick = { showRestartConfirmation = true },
+                            modifier = Modifier.fillMaxWidth()
+                        ) { Text("Перезагрузить Raspberry Pi") }
+                    } else {
+                        Text("Сервер не сообщил о доступности защищённого API перезагрузки. Нужна серверная версия с VIEWPIE_RESTART_TOKEN.")
+                    }
                 }
                 "Настройки" -> {
                     Text("Настройки Viewpie", style = MaterialTheme.typography.titleLarge)
