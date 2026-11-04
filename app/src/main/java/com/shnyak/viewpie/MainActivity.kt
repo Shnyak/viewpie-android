@@ -7,7 +7,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.*
+import androidx.compose.material3.*\nimport androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -48,7 +48,7 @@ private fun ViewpieApp() {
     var selectedCamera by remember { mutableStateOf<CameraDto?>(null) }
     var fullscreenDuration by remember { mutableStateOf("60") }
     var cameraTests by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
-    var savingSettings by remember { mutableStateOf(false) }
+    var savingSettings by remember { mutableStateOf(false) }\n    var restartToken by remember { mutableStateOf("") }\n    var showRestartConfirmation by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     var api by remember { mutableStateOf<ViewpieApi?>(null) }
 
@@ -131,7 +131,7 @@ private fun ViewpieApp() {
                     InfoLine("Камер в конфигурации", status?.cameras?.size?.toString() ?: "—")
                     InfoLine("Активных потоков", status?.active_streams?.toString() ?: "—")
                     InfoLine("Панелей", status?.panels_count?.toString() ?: "—")
-                    InfoLine("Температура CPU", status?.cpu_temp_c?.let { "${it} °C" } ?: "Нет данных")
+                    InfoLine("Температура CPU", status?.cpu_temp_c?.let { "${it} °C" } ?: "Нет данных")\n                    InfoLine("Загрузка CPU", status?.cpu_load_percent?.let { "%.1f%%".format(it) } ?: "Нет данных")\n                    InfoLine("Load Average (1 мин)", status?.load_average_1m?.let { "%.2f".format(it) } ?: "Нет данных")
                     InfoLine("Время работы", status?.uptime_seconds?.let { formatUptime(it) } ?: "—")
                     InfoLine("Пауза Viewpie", if (status?.paused == true) "Включена" else "Выключена")
                     InfoLine("Физический экран", when (status?.screen_off) {
@@ -140,7 +140,7 @@ private fun ViewpieApp() {
                         null -> "Нет данных"
                     })
                     Text("Состояние обновляется автоматически каждые 5 секунд.")
-                    Text("CPU usage и Load Average появятся после поддержки этих метрик сервером Viewpie.")
+                    if (status?.cpu_load_percent == null || status?.load_average_1m == null) {\n                        Text("Метрики CPU и Load Average требуют обновлённой версии сервера Viewpie.")\n                    }
                 }
                 "Панели" -> {
                     if (selectedPanel != null) {
@@ -301,7 +301,7 @@ private fun ViewpieApp() {
                         modifier = Modifier.fillMaxWidth()
                     ) { Text("Обновить состояние") }
                     Text("Для запуска камеры на HDMI выберите её в разделе «Камеры».")
-                    Text("Физическое питание экрана и перезагрузка Raspberry Pi не предоставляются текущим API сервера. Пауза Viewpie не равна отключению питания дисплея.")
+                    Text("Пауза Viewpie выводит чёрный кадр и останавливает декодеры; это не отключение питания дисплея.")\n                    HorizontalDivider()\n                    Text("Перезагрузка Raspberry Pi", style = MaterialTheme.typography.titleMedium)\n                    if (status?.restart_available == true) {\n                        OutlinedTextField(\n                            value = restartToken, onValueChange = { restartToken = it },\n                            label = { Text("Токен перезагрузки") }, singleLine = true,\n                            visualTransformation = PasswordVisualTransformation(),\n                            modifier = Modifier.fillMaxWidth()\n                        )\n                        Button(\n                            enabled = connected && restartToken.isNotBlank(),\n                            onClick = { showRestartConfirmation = true },\n                            modifier = Modifier.fillMaxWidth()\n                        ) { Text("Перезагрузить Raspberry Pi") }\n                    } else {\n                        Text("Сервер не сообщил о доступности защищённого API перезагрузки. Нужна серверная версия с VIEWPIE_RESTART_TOKEN.")\n                    }
                 }
                 "Настройки" -> {
                     Text("Настройки Viewpie", style = MaterialTheme.typography.titleLarge)
