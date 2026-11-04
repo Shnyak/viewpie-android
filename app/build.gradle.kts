@@ -37,5 +37,6 @@ dependencies {
     implementation("com.google.android.exoplayer:exoplayer-core:2.19.1")
     implementation("com.google.android.exoplayer:exoplayer-rtsp:2.19.1")
     implementation("com.google.android.exoplayer:exoplayer-ui:2.19.1")
+    testImplementation("junit:junit:4.13.2")
     debugImplementation("androidx.compose.ui:ui-tooling")
 }
