@@ -1,2 +1,22 @@
-# viewpie-android
-viewpie-android
+# Viewpie Android
+
+Локальный Android-клиент для Viewpie. Не требует Home Assistant или облака.
+
+## Первый этап
+- Kotlin + Jetpack Compose.
+- Подключение к Raspberry Pi по локальному IP и порту.
+- Чтение состояния, списка панелей и камер.
+- Базовые экраны обзора, панелей, камер и управления.
+
+## Сборка
+Откройте проект в Android Studio с JDK 17 и Android SDK 35.
+
+## API и ограничения
+- `GET /api/status`, `GET /api/panels`, `GET /api/cameras`.
+- `GET /api/panels/{id}` предназначен для получения конфигурации существующей панели.
+- Независимый RTSP-просмотр должен идти напрямую с камеры и не вызывать HDMI-команды.
+- `POST /api/fullscreen` меняет HDMI-вывод. Он предназначен только для режима управления монитором.
+- В проверенной версии API нет подтверждённых endpoint для reboot Raspberry Pi, restart systemd или отдельного DPMS управления экраном.
+- CPU usage и Load Average не считаются доступными, пока сервер не отдаёт эти поля.
+
+Приложение рассчитано на локальную сеть. Не публикуйте API Viewpie в интернет.
