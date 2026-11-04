@@ -8,7 +8,7 @@ import retrofit2.http.Path
 interface ViewpieApi {
     @GET("api/status") suspend fun status(): StatusDto
     @GET("api/panels") suspend fun panels(): PanelsResponse
-    @GET("api/panels/{id}") suspend fun panel(@Path("id") id: String): Map<String, Any?>
+    @GET("api/panels/{id}") suspend fun panel(@Path("id") id: String): PanelDetailDto
     @GET("api/cameras") suspend fun cameras(): List<CameraDto>
     @POST("api/pause") suspend fun pause()
     @POST("api/resume") suspend fun resume()
